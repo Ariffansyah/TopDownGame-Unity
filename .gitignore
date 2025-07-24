@@ -50,12 +50,6 @@ ehthumbs.db
 Thumbs.db
 
 # =============== #
-# Package Manager #
-# =============== #
-Packages/manifest.json
-Packages/packages-lock.json
-
-# =============== #
 # Crash Reports   #
 # =============== #
 sysinfo.txt

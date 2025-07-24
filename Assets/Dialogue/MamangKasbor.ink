@@ -6,14 +6,12 @@ What do you want?
     -> choices_1
 + [Just want to chat]
     -> choices_2
-
 === choices_1 ===
 Fresh from the fryer! Bakwan or tempeh? #speaker:MamangKasbor #image:Cat_Smile
 + [Bakwan]
     -> choices_1_bakwan
 + [Tempeh]
     -> choices_1_tempeh
-
 === choices_1_bakwan ===
 One bakwan! Want chili sauce? #speaker:MamangKasbor #image:Cat_Smile
 + [Yes]
@@ -22,7 +20,6 @@ One bakwan! Want chili sauce? #speaker:MamangKasbor #image:Cat_Smile
 + [No]
     Alright, enjoy! #speaker:MamangKasbor #image:Cat_Neutral
     -> END
-
 === choices_1_tempeh ===
 Tempeh! One or two? #speaker:MamangKasbor #image:Cat_Smile
 + [One]
@@ -31,7 +28,6 @@ Tempeh! One or two? #speaker:MamangKasbor #image:Cat_Smile
 + [Two]
     Two tempeh, enjoy! #speaker:MamangKasbor #image:Cat_Smile
     -> END
-
 === choices_2 ===
 Oh, it’s quiet today. Want to talk about school or work? #speaker:MamangKasbor #image:Cat_Neutral
 + [School]

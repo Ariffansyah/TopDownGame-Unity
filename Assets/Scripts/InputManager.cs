@@ -1,11 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// This script acts as a single point for all other scripts to get
-// the current input from. It uses Unity's new Input System and
-// functions should be mapped to their corresponding controls
-// using a PlayerInput component with Unity Events.
-
 [RequireComponent(typeof(PlayerInput))]
 public class InputManager : MonoBehaviour
 {
@@ -82,10 +77,6 @@ public class InputManager : MonoBehaviour
     {
         return moveDirection;
     }
-
-    // for any of the below 'Get' methods, if we're getting it then we're also using it,
-    // which means we should set it to false so that it can't be used again until actually
-    // pressed again.
 
     public bool GetJumpPressed()
     {

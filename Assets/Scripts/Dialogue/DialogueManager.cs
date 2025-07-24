@@ -9,7 +9,9 @@ public class DialogueManager : MonoBehaviour
 {
     [Header("Dialogue UI")]
     [SerializeField] private GameObject dialoguePanel;
-    [SerializeField] private TMPro.TextMeshProUGUI dialogueText;
+    [SerializeField] private TextMeshProUGUI dialogueText;
+    [SerializeField] private TextMeshProUGUI displayName;
+    [SerializeField] private Animator speakerImage;
 
     [Header("Choices UI")]
     [SerializeField] private GameObject[] choices;
@@ -22,13 +24,23 @@ public class DialogueManager : MonoBehaviour
 
     private static DialogueManager instance;
 
+    private const string SPEAKER_TAG = "speaker";
+    private const string IMAGE_TAG = "image";
+
+    private bool canContinueToNextLine = false;
+
+    private Coroutine displayLineCoroutine;
+
     private void Awake()
     {
         if (instance != null)
         {
             Debug.LogWarning("Multiple instances of DialogueManager detected. Destroying the new instance.");
+            Destroy(this.gameObject);
+            return;
         }
         instance = this;
+        DontDestroyOnLoad(this.gameObject);
     }
 
     public static DialogueManager GetInstance()
@@ -42,22 +54,21 @@ public class DialogueManager : MonoBehaviour
         DialogueIsPlaying = false;
 
         choiceTexts = new TextMeshProUGUI[choices.Length];
-        int i = 0;
-        foreach (GameObject choice in choices)
+        for (int i = 0; i < choices.Length; i++)
         {
-            choiceTexts[i] = choice.GetComponentInChildren<TextMeshProUGUI>();
-            i++;
+            choiceTexts[i] = choices[i].GetComponentInChildren<TextMeshProUGUI>();
+            choices[i].SetActive(false);
         }
     }
 
-    public void Update()
+    private void Update()
     {
-        if (DialogueIsPlaying)
+        if (!DialogueIsPlaying)
+            return;
+
+        if (canContinueToNextLine && currentStory.currentChoices.Count == 0 && InputManager.GetInstance().GetSubmitPressed())
         {
-            if (InputManager.GetInstance().GetSubmitPressed())
-            {
-                DisplayNextLine();
-            }
+            DisplayNextLine();
         }
     }
 
@@ -66,6 +77,9 @@ public class DialogueManager : MonoBehaviour
         currentStory = new Story(InkJSON.text);
         dialoguePanel.SetActive(true);
         DialogueIsPlaying = true;
+        displayName.text = "???";
+        speakerImage.Play("Default");
+        canContinueToNextLine = false;
         DisplayNextLine();
     }
 
@@ -79,16 +93,93 @@ public class DialogueManager : MonoBehaviour
 
     private void DisplayNextLine()
     {
+        if (displayLineCoroutine != null)
+        {
+            StopCoroutine(displayLineCoroutine);
+        }
+
         if (currentStory.canContinue)
         {
             string line = currentStory.Continue();
-            DisplayChoices();
-            dialogueText.text = line;
+            HandleTags(currentStory.currentTags);
+            displayLineCoroutine = StartCoroutine(TypeWritting(line));
         }
         else
         {
             StartCoroutine(ExitDialogue());
             dialogueText.text = string.Empty;
+        }
+    }
+
+    private IEnumerator TypeWritting(string line)
+    {
+        dialogueText.text = line;
+        dialogueText.maxVisibleCharacters = 0;
+        HideChoices();
+        canContinueToNextLine = false;
+
+        bool isAddingRichTextTag = false;
+
+        foreach (char letter in line)
+        {
+            if (InputManager.GetInstance().GetSubmitPressed())
+            {
+                dialogueText.maxVisibleCharacters = line.Length;
+                break;
+            }
+
+            if (letter == '<' || isAddingRichTextTag)
+            {
+                isAddingRichTextTag = true;
+                if (letter == '>')
+                    isAddingRichTextTag = false;
+            }
+            else
+            {
+                dialogueText.maxVisibleCharacters++;
+                yield return new WaitForSeconds(0.04f);
+            }
+        }
+
+        dialogueText.maxVisibleCharacters = line.Length;
+        DisplayChoices();
+        canContinueToNextLine = true;
+    }
+
+    private void HideChoices()
+    {
+        for (int i = 0; i < choices.Length; i++)
+        {
+            choices[i].SetActive(false);
+        }
+    }
+
+    private void HandleTags(List<string> tags)
+    {
+        foreach (string tag in tags)
+        {
+            string[] splitParts = tag.Split(':');
+            if (splitParts.Length != 2)
+            {
+                Debug.LogWarning($"Invalid tag format: {tag}");
+                continue;
+            }
+
+            string tagKey = splitParts[0].Trim();
+            string tagValue = splitParts[1].Trim();
+
+            switch (tagKey)
+            {
+                case SPEAKER_TAG:
+                    displayName.text = tagValue;
+                    break;
+                case IMAGE_TAG:
+                    speakerImage.Play(tagValue);
+                    break;
+                default:
+                    Debug.LogWarning($"Unknown tag: {tagKey}");
+                    break;
+            }
         }
     }
 
@@ -120,11 +211,23 @@ public class DialogueManager : MonoBehaviour
     {
         EventSystem.current.SetSelectedGameObject(null);
         yield return new WaitForEndOfFrame();
-        EventSystem.current.SetSelectedGameObject(choices[0]);
+        for (int i = 0; i < choices.Length; i++)
+        {
+            if (choices[i].activeInHierarchy)
+            {
+                EventSystem.current.SetSelectedGameObject(choices[i]);
+                break;
+            }
+        }
     }
 
     public void MakeChoice(int choiceIndex)
     {
-        currentStory.ChooseChoiceIndex(choiceIndex);
+        if (canContinueToNextLine && choiceIndex >= 0 && choiceIndex < currentStory.currentChoices.Count)
+        {
+            currentStory.ChooseChoiceIndex(choiceIndex);
+            InputManager.GetInstance().RegisterSubmitPressed();
+            DisplayNextLine();
+        }
     }
 }

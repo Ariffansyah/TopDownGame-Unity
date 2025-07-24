@@ -40,7 +40,6 @@ public class DialogueManager : MonoBehaviour
             return;
         }
         instance = this;
-        DontDestroyOnLoad(this.gameObject);
     }
 
     public static DialogueManager GetInstance()

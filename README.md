@@ -68,8 +68,5 @@ Feel free to use this repository as a template for your own top-down Unity games
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE).
 
----
-
-Explore, experiment, and expand—happy developing!

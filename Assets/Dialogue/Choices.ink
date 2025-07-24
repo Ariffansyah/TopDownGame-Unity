@@ -1,23 +1,21 @@
-VAR pokemon_name = ""
+VAR name = ""
 
-EXTERNAL playEmote(emoteName)
-
-{ pokemon_name == "": -> main | -> already_chose }
+{ name == "": -> main | -> already_chose }
 
 === main ===
-Which pokemon do you choose?
-    + [Charmander]
-        -> chosen("Charmander")
-    + [Bulbasaur]
-        -> chosen("Bulbasaur")
-    + [Squirtle]
-        -> chosen("Squirtle")
+Choose your fighter?
+    + [Sumanto]
+        -> chosen("Sumanto")
+    + [Ambatukam]
+        -> chosen("Ambatukam")
+    + [Rusdi]
+        -> chosen("Rusdi")
         
-=== chosen(pokemon) ===
-~ pokemon_name = pokemon
-You chose {pokemon}!
+=== chosen(fighter) ===
+~ name = fighter
+You chose {fighter}!
 -> END
 
 === already_chose ===
-You already chose {pokemon_name}!
+You already chose {name}!
 -> END
